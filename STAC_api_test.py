@@ -75,8 +75,8 @@ signed_href = pc.sign(thumbnail_asset.href)
 from PIL import Image
 from urllib.request import urlopen
 
-Image.open(urlopen(signed_href))
-
+img = Image.open(urlopen(signed_href))
+img.show()
 
 
 
