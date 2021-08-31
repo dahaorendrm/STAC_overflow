@@ -1,2 +1,5 @@
 data
-training_data
+training_data/train_features
+training_data/train_labels
+*.tgz
+
