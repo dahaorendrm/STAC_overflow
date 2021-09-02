@@ -103,6 +103,24 @@ def display_random_chip(random_state):
     plt.tight_layout(pad=5)
     plt.show()
 
+# Helper function for pivoting out paths by chip
+def get_paths_by_chip(image_level_df):
+    """
+    Returns a chip-level dataframe with pivoted columns
+    for vv_path and vh_path.
+
+    Args:
+        image_level_df (pd.DataFrame): image-level dataframe
+
+    Returns:
+        chip_level_df (pd.DataFrame): chip-level dataframe
+    """
+    paths = []
+    for chip, group in image_level_df.groupby("chip_id"):
+        vv_path = group[group.polarization == "vv"]["feature_path"].values[0]
+        vh_path = group[group.polarization == "vh"]["feature_path"].values[0]
+        paths.append([chip, vv_path, vh_path])
+    return pd.DataFrame(paths, columns=["chip_id", "vv_path", "vh_path"])
 
 
 if __name__ == '__main__':
@@ -119,4 +137,5 @@ if __name__ == '__main__':
 
     with rasterio.open(image_path) as img:
         numpy_mask = img.read(1, masked=True)
+
     display_random_chip(7)

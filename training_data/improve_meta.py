@@ -5,12 +5,12 @@ import numpy as np
 import pandas as pd
 
 # This is where our downloaded images and metadata live locally
-DATA_PATH = Path(".")
+DATA_PATH = Path("training_data")
 train_metadata = pd.read_csv(
     DATA_PATH / "flood-training-metadata.csv", parse_dates=["scene_start"]
 )
 df = pd.DataFrame(train_metadata)
-df.to_csv("flood-training-metadata-original.csv")
+df.to_csv("flood-training-metadata-original.csv", index=False)
 #train_metadata.head()
 #train_metadata.shape
 #train_metadata.chip_id.nunique()
@@ -45,4 +45,4 @@ train_metadata["label_path"] = (
     / train_metadata.chip_id.path.with_suffix(".tif").path
 )
 df = pd.DataFrame(train_metadata)
-df.to_csv("flood-training-metadata.csv")
+df.to_csv("flood-training-metadata.csv", index=False)
