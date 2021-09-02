@@ -1,9 +1,11 @@
 # import
-#import rasterio
+from pathlib import Path
+import numpy as np
 import pandas as pd
 import random
 random.seed(9) # set a seed for reproducibility
 import utils
+import rasterio
 # process data
 DATA_PATH = Path("training_data")
 train_metadata = pd.read_csv(
