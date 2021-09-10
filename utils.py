@@ -1,5 +1,5 @@
 import rasterio
-
+import pandas as pd
 
 # Helper functions for visualizing Sentinel-1 images
 def scale_img(matrix):

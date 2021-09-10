@@ -1,4 +1,6 @@
 import torch
+import rasterio
+import numpy as np
 class FloodDataset(torch.utils.data.Dataset):
     """Reads in images, transforms pixel values, and serves a
     dictionary containing chip ids, image tensors, and
@@ -16,8 +18,16 @@ class FloodDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         # Loads a 2-channel image from a chip-level dataframe
         img = self.data.loc[idx]
+        try:
+            rasterio.open(img.vv_path)
+        except:
+            rasterio.open(img.vv_path)
         with rasterio.open(img.vv_path) as vv:
             vv_path = vv.read(1)
+        try:
+            rasterio.open(img.vh_path)
+        except:
+            rasterio.open(img.vh_path)
         with rasterio.open(img.vh_path) as vh:
             vh_path = vh.read(1)
         x_arr = np.stack([vv_path, vh_path], axis=-1)

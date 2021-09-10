@@ -4,9 +4,20 @@ from pathlib import Path
 
 import pytorch_lightning as pl
 import segmentation_models_pytorch as smp
+import albumentations
 
 from FloodDataset import FloodDataset
 from loss import *
+
+# These transformations will be passed to our model class
+training_transformations = albumentations.Compose(
+    [
+        albumentations.RandomCrop(256, 256),
+        albumentations.RandomRotate90(),
+        albumentations.HorizontalFlip(),
+        albumentations.VerticalFlip(),
+    ]
+)
 
 class FloodModel(pl.LightningModule):
     def __init__(self, hparams):

@@ -4,7 +4,8 @@ training_data/train_labels
 *.tgz
 *.pth
 benchmark-pytorch
- __pycache__
+__pycache__
+
 *.zip
 submit-pytorch
 model-outputs
