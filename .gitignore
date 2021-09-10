@@ -2,4 +2,9 @@ data
 training_data/train_features
 training_data/train_labels
 *.tgz
-
+*.pth
+benchmark-pytorch
+ __pycache__
+*.zip
+submit-pytorch
+model-outputs
