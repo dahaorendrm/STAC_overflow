@@ -5,7 +5,8 @@ training_data/train_labels
 *.pth
 benchmark-pytorch
 __pycache__
-
 *.zip
-submit-pytorch
+submit-pytorch/assets
 model-outputs
+*.out
+tensorboard_logs
