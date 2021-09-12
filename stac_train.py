@@ -55,3 +55,6 @@ flood_model = FloodModel(hparams=hparams)
 flood_model.fit()
 # results
 flood_model.trainer_params["callbacks"][0].best_model_score
+# save the weights to submitssion file
+weight_path = "model-outputs/flood_model.pt"
+torch.save(flood_model.state_dict(), weight_path)
