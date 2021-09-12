@@ -54,7 +54,7 @@ flood_model = FloodModel(hparams=hparams)
 # run model
 flood_model.fit()
 # results
-flood_model.trainer_params["callbacks"][0].best_model_score
+print(f'Best IOU score is : {flood_model.trainer_params["callbacks"][0].best_model_score}')
 # save the weights to submitssion file
 weight_path = "model-outputs/flood_model.pt"
 torch.save(flood_model.state_dict(), weight_path)

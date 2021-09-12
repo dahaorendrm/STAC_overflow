@@ -45,6 +45,10 @@ class FloodDataset(torch.utils.data.Dataset):
 
         # Prepare sample dictionary
         sample = {"chip_id": img.chip_id, "chip": x_arr}
+        #################################################
+        #################################################
+        ## Dong please add you code hear to introduce supplimentary data in the sample !!!!!!!!!!!!!!!!!!!!!!!
+           
 
         # Load label if available - training only
         if self.label is not None:
