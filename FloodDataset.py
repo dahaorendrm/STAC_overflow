@@ -2,7 +2,6 @@ import torch
 import rasterio
 import numpy as np
 import os
-from pystac_client import Client
 from fetch_additional_data import *
 
 
@@ -78,11 +77,6 @@ class FloodDataset(torch.utils.data.Dataset):
             if file_name.endswith("_vv.tif"):
                 chip_paths.append(os.path.join(TRAINING_DATA_DIR, file_name))
         print(f"{len(chip_paths)} chips found.")
-
-        # Create the STAC API client¶
-        # This will be used in the methods below to query the PC STAC API.
-        STAC_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
-        catalog = Client.open(STAC_API)
 
         # Configurate the auxiliary input files that we will generate.
         # Define a set of parameters to pass into create_chip_aux_file

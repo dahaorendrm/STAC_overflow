@@ -137,6 +137,12 @@ def create_chip_aux_file(
     The auxiliary chip file includes chip_info for the Collection and Asset, and is
     saved in the same directory as the original chip with the given file_name.
     """
+
+    # Create the STAC API client¶
+    # This will be used in the methods below to query the PC STAC API.
+    STAC_API = "https://planetarycomputer.microsoft.com/api/stac/v1"
+    catalog = Client.open(STAC_API)
+
     output_path = os.path.join(
         os.path.dirname(chip_info.path), f"{chip_info.prefix}_{file_name}"
     )
