@@ -69,6 +69,8 @@ class FloodModel(pl.LightningModule):
 
         # Load images and labels
         x = batch["chip"]
+        ## more data #####################################################
+        ##################################################################
         y = batch["label"].long()
         if self.gpu:
             x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
@@ -77,7 +79,7 @@ class FloodModel(pl.LightningModule):
         preds = self.forward(x)
 
         # Calculate training loss
-        criterion = XEDiceLoss() #########################################
+        criterion = XEDiceLoss()
         xe_dice_loss = criterion(preds, y)
 
         # Log batch xe_dice_loss
