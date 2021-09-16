@@ -22,20 +22,26 @@ class FloodDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         # Loads a 2-channel image from a chip-level dataframe
         img = self.data.loc[idx]
-        try:
-            rasterio.open(img.vv_path)
-        except:
-            rasterio.open(img.vv_path)
         with rasterio.open(img.vv_path) as vv:
-            vv_path = vv.read(1)
-        try:
-            rasterio.open(img.vh_path)
-        except:
-            rasterio.open(img.vh_path)
+            vv_img = vv.read(1)
         with rasterio.open(img.vh_path) as vh:
-            vh_path = vh.read(1)
-        x_arr = np.stack([vv_path, vh_path], axis=-1)
-
+            vh_img = vh.read(1)
+        name_path = img.vh_path[:-6]
+        with rasterio.open(name_path+'nasadem.tif') as nasadem:
+            nasadem_img = nasadem.read(1)
+        with rasterio.open(name_path+'jrc-gsw-extent.tif') as extent:
+            extent_img = extent.read(1)
+        with rasterio.open(name_path+'jrc-gsw-occurrence.tif') as occurrence:
+            occurrence_img = occurrence.read(1)
+        with rasterio.open(name_path+'jrc-gsw-recurrence.tif') as recurrence:
+            recurrence_img = recurrence.read(1)
+        with rasterio.open(name_path+'jrc-gsw-seasonality.tif') as seasonality:
+            seasonality_img = seasonality.read(1)
+        with rasterio.open(name_path+'jrc-gsw-transitions.tif') as transitions:
+            transitions_img = transitions.read(1)
+        with rasterio.open(name_path+'jrc-gsw-change.tif') as change:
+            change_img = change.read(1)
+        x_arr = np.stack([vv_img, vh_img], axis=-1)
         # Min-max normalization
         min_norm = -77
         max_norm = 26
@@ -45,15 +51,13 @@ class FloodDataset(torch.utils.data.Dataset):
         # Apply data augmentations, if provided
         if self.transforms:
             x_arr = self.transforms(image=x_arr)["image"]
+            #####################add supplementary
         x_arr = np.transpose(x_arr, [2, 0, 1])
 
         # Prepare sample dictionary
-        sample = {"chip_id": img.chip_id, "chip": x_arr}
-        #################################################
-        #################################################
-        ## Dong please add you code hear to introduce supplimentary data in the sample !!!!!!!!!!!!!!!!!!!!!!!
-        # !!!!!!!Extract training chips
-        
+        sample = {"chip_id": img.chip_id, "chip": x_arr, "nasadem":nasadem_img, "extent":extent_img, "occurrence":occurrence_img,
+                        "recurrence":recurrence_img, "seasonality":seasonality_img, "transitions":transitions_img, "change":change_img}
+
         # Load label if available - training only
         if self.label is not None:
             label_path = self.label.loc[idx].label_path
@@ -62,6 +66,27 @@ class FloodDataset(torch.utils.data.Dataset):
             # Apply same data augmentations to label
             if self.transforms:
                 y_arr = self.transforms(image=y_arr)["image"]
+                #####################add supplementary
             sample["label"] = y_arr
 
         return sample
+
+if __name__ == '__main__':
+    import pandas as pd
+    import utils
+    DATA_PATH = Path("training_data")
+    train_metadata = pd.read_csv(
+        DATA_PATH / "flood-training-metadata.csv", parse_dates=["scene_start"]
+    )
+    # Sample 3 random floods for validation set
+    flood_ids = train_metadata.flood_id.unique().tolist()
+    val_flood_ids = random.sample(flood_ids, 3)
+    val = train_metadata[train_metadata.flood_id.isin(val_flood_ids)]
+    train = train_metadata[~train_metadata.flood_id.isin(val_flood_ids)]
+    train_x = utils.get_paths_by_chip(train)
+    train_y = train[["chip_id", "label_path"]].drop_duplicates().reset_index(drop=True)
+
+    train_dataset = FloodDataset(
+        train_x, train_y
+    )
+    sample = next(iter(train_dataloader))
