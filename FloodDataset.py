@@ -74,6 +74,12 @@ class FloodDataset(torch.utils.data.Dataset):
 if __name__ == '__main__':
     import pandas as pd
     import utils
+    import random
+    from pathlib import Path
+    from torch.utils.data import DataLoader
+    import matplotlib.pyplot as plt
+    import torch
+    import os
     DATA_PATH = Path("training_data")
     train_metadata = pd.read_csv(
         DATA_PATH / "flood-training-metadata.csv", parse_dates=["scene_start"]
@@ -89,4 +95,15 @@ if __name__ == '__main__':
     train_dataset = FloodDataset(
         train_x, train_y
     )
+    train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
     sample = next(iter(train_dataloader))
+    key_list = ["chip", "nasadem", "extent", "occurrence","recurrence",
+    "seasonality", "transitions", "change"]
+    if not os.path.isdir('temp'):
+        os.mkdir('temp')
+    for key,val in sample:
+        if key in key_list:
+            if key is 'chip':
+                img = utils.create_false_color_composite(torch.squeeze(val))
+                plt.imsave('temp/'+key+'.png',img)
+            plt.imsave('temp/'+key+'.png',val)

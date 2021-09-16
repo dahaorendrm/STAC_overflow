@@ -31,7 +31,7 @@ def scale_img(matrix):
     return matrix.clip(0, 1)
 
 
-def create_false_color_composite(path_vv, path_vh):
+def create_false_color_composite(s1_img):
     """
     Returns a S1 false color composite for visualization.
 
@@ -42,14 +42,14 @@ def create_false_color_composite(path_vv, path_vh):
     Returns:
         np.array: image (H, W, 3) ready for visualization
     """
-    # Read VV/VH bands
-    with rasterio.open(path_vv) as vv:
-        vv_img = vv.read(1)
-    with rasterio.open(path_vh) as vh:
-        vh_img = vh.read(1)
-
-    # Stack arrays along the last dimension
-    s1_img = np.stack((vv_img, vh_img), axis=-1)
+    # # Read VV/VH bands
+    # with rasterio.open(path_vv) as vv:
+    #     vv_img = vv.read(1)
+    # with rasterio.open(path_vh) as vh:
+    #     vh_img = vh.read(1)
+    #
+    # # Stack arrays along the last dimension
+    # s1_img = np.stack((vv_img, vh_img), axis=-1)
 
     # Create false color composite
     img = np.zeros((512, 512, 3), dtype=np.float32)
