@@ -1,6 +1,6 @@
 import rasterio
 import pandas as pd
-
+import numpy as np
 # Helper functions for visualizing Sentinel-1 images
 def scale_img(matrix):
     """
@@ -52,11 +52,11 @@ def create_false_color_composite(s1_img):
     # s1_img = np.stack((vv_img, vh_img), axis=-1)
 
     # Create false color composite
-    img = np.zeros((512, 512, 3), dtype=np.float32)
+    img = np.zeros((512, 512, 3), dtype=np.float64)
     img[:, :, :2] = s1_img.copy()
     img[:, :, 2] = s1_img[:, :, 0] / s1_img[:, :, 1]
-
-    return scale_img(img)
+    return img.clip(0,1)
+    # return scale_img(img)
 
 
 def display_random_chip(random_state):

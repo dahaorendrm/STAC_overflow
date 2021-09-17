@@ -196,10 +196,11 @@ aux_file_params = [
 # Iterate over the chips and generate all aux input files.
 count = len(chip_paths)
 for i, chip_path in enumerate(chip_paths):
+    if i < 446:
+        continue
     print(f"({i+1} of {count}) {chip_path}")
     chip_info = get_chip_info(chip_path)
     for collection_id, asset_key, file_name, resampling_method in aux_file_params:
         print(f"  ... Creating chip data for {collection_id} {asset_key}")
         create_chip_aux_file(
-            chip_info, collection_id, asset_key, file_name, resampling=resampling_method
-        )
+            chip_info, collection_id, asset_key, file_name, resampling=resampling_method        )

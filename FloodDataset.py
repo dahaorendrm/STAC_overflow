@@ -2,7 +2,6 @@ import torch
 import rasterio
 import numpy as np
 import os
-from fetch_additional_data import *
 
 
 class FloodDataset(torch.utils.data.Dataset):
@@ -98,12 +97,18 @@ if __name__ == '__main__':
     train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
     sample = next(iter(train_dataloader))
     key_list = ["chip", "nasadem", "extent", "occurrence","recurrence",
-    "seasonality", "transitions", "change"]
+    "seasonality", "transitions", "change", 'label']
     if not os.path.isdir('temp'):
         os.mkdir('temp')
-    for key,val in sample:
+    for key,val in sample.items():
         if key in key_list:
+            val = torch.squeeze(val)
             if key is 'chip':
-                img = utils.create_false_color_composite(torch.squeeze(val))
+                img = torch.moveaxis(val,0,-1)
+                img = utils.create_false_color_composite(img.numpy())
+                #print(img.shape)
                 plt.imsave('temp/'+key+'.png',img)
-            plt.imsave('temp/'+key+'.png',val)
+                #plt.imshow(img)
+                #plt.show()
+            else:    
+                plt.imsave('temp/'+key+'.png',val.numpy())

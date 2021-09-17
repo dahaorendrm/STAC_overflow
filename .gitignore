@@ -10,3 +10,4 @@ submit-pytorch/assets
 model-outputs
 *.out
 tensorboard_logs
+temp
