@@ -69,6 +69,8 @@ class FloodModel(pl.LightningModule):
 
         # Load images and labels
         x = batch["chip"]
+        nasadem = batch['nasadem']
+        x_arr = np.stack([x, nasadem], axis=1)
         ## more data #####################################################
         ##################################################################
         y = batch["label"].long()

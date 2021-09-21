@@ -46,10 +46,11 @@ class FloodDataset(torch.utils.data.Dataset):
         max_norm = 26
         x_arr = np.clip(x_arr, min_norm, max_norm)
         x_arr = (x_arr - min_norm) / (max_norm - min_norm)
-
+        #######################adjust supp data range
         # Apply data augmentations, if provided
         if self.transforms:
             x_arr = self.transforms(image=x_arr)["image"]
+            nasadem_img = self.transforms(image=nasadem_img)["image"]
             #####################add supplementary
         x_arr = np.transpose(x_arr, [2, 0, 1])
 
@@ -65,7 +66,6 @@ class FloodDataset(torch.utils.data.Dataset):
             # Apply same data augmentations to label
             if self.transforms:
                 y_arr = self.transforms(image=y_arr)["image"]
-                #####################add supplementary
             sample["label"] = y_arr
 
         return sample
@@ -103,6 +103,7 @@ if __name__ == '__main__':
     for key,val in sample.items():
         if key in key_list:
             val = torch.squeeze(val)
+            print(f'key:{}, max value = {np.amax(val)}')
             if key is 'chip':
                 img = torch.moveaxis(val,0,-1)
                 img = utils.create_false_color_composite(img.numpy())
@@ -110,5 +111,5 @@ if __name__ == '__main__':
                 plt.imsave('temp/'+key+'.png',img)
                 #plt.imshow(img)
                 #plt.show()
-            else:    
+            else:
                 plt.imsave('temp/'+key+'.png',val.numpy())
