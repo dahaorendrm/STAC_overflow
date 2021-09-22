@@ -68,10 +68,11 @@ class FloodModel(pl.LightningModule):
         torch.set_grad_enabled(True)
 
         # Load images and labels
+        print(f'shape chip:{batch["chip"].shape} nasadem:{batch["nasadem"].shape} recurrence:{batch["recurrence"].shape}')
         x = [batch["chip"],batch["nasadem"],batch["extent"],batch["recurrence"],
             batch["seasonality"],batch["transitions"],batch["change"]]
         x = torch.cat(x,1)
-
+        Error()
         y = batch["label"].long()
         if self.gpu:
             x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
@@ -100,7 +101,9 @@ class FloodModel(pl.LightningModule):
         torch.set_grad_enabled(False)
 
         # Load images and labels
-        x = batch["chip"]
+        x = [batch["chip"],batch["nasadem"],batch["extent"],batch["recurrence"],
+            batch["seasonality"],batch["transitions"],batch["change"]]
+        x = torch.cat(x,1)
         y = batch["label"].long()
         if self.gpu:
             x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
