@@ -79,7 +79,13 @@ class FloodDataset(torch.utils.data.Dataset):
 
             #####################add supplementary
         x_arr = np.transpose(x_arr, [2, 0, 1])
-
+        nasadem_img = np.expand_dims(nasadem_img,0)
+        extent_img = np.expand_dims(extent_img,0)
+        occurrence_img = np.expand_dims(occurrence_img,0)
+        recurrence_img = np.expand_dims(recurrence_img,0)
+        seasonality_img = np.expand_dims(seasonality_img,0)
+        transitions_img = np.expand_dims(transitions_img,0)
+        change_img = np.expand_dims(change_img,0)
         # Prepare sample dictionary
         sample = {"chip_id": img.chip_id, "chip": x_arr, "nasadem":nasadem_img, "extent":extent_img, "occurrence":occurrence_img,
                         "recurrence":recurrence_img, "seasonality":seasonality_img, "transitions":transitions_img, "change":change_img}
