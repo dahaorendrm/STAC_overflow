@@ -42,15 +42,41 @@ class FloodDataset(torch.utils.data.Dataset):
             change_img = change.read(1)
         x_arr = np.stack([vv_img, vh_img], axis=-1)
         # Min-max normalization
-        min_norm = -77
-        max_norm = 26
+        min_norm = -77 #-79
+        max_norm = 26 #28
         x_arr = np.clip(x_arr, min_norm, max_norm)
         x_arr = (x_arr - min_norm) / (max_norm - min_norm)
+        min_norm = -64
+        max_norm = 2096
+        nasadem_img = np.clip(nasadem_img, min_norm, max_norm)
+        nasadem_img = (nasadem_img - min_norm) / (max_norm - min_norm)
+        min_norm = 0
+        max_norm = 255
+        extent_img = np.clip(extent_img, min_norm, max_norm)
+        extent_img = (extent_img - min_norm) / (max_norm - min_norm)
+        occurrence_img = np.clip(occurrence_img, min_norm, max_norm)
+        occurrence_img = (occurrence_img - min_norm) / (max_norm - min_norm)
+        recurrence_img = np.clip(recurrence_img, min_norm, max_norm)
+        recurrence_img = (recurrence_img - min_norm) / (max_norm - min_norm)
+        seasonality_img = np.clip(seasonality_img, min_norm, max_norm)
+        seasonality_img = (seasonality_img - min_norm) / (max_norm - min_norm)
+        transitions_img = np.clip(transitions_img, min_norm, max_norm)
+        transitions_img = (transitions_img - min_norm) / (max_norm - min_norm)
+        change_img = np.clip(change_img, min_norm, max_norm)
+        change_img = (change_img - min_norm) / (max_norm - min_norm)
+
         #######################adjust supp data range
         # Apply data augmentations, if provided
         if self.transforms:
             x_arr = self.transforms(image=x_arr)["image"]
             nasadem_img = self.transforms(image=nasadem_img)["image"]
+            extent_img = self.transforms(image=extent_img)["image"]
+            occurrence_img = self.transforms(image=occurrence_img)["image"]
+            recurrence_img = self.transforms(image=recurrence_img)["image"]
+            seasonality_img = self.transforms(image=seasonality_img)["image"]
+            transitions_img = self.transforms(image=transitions_img)["image"]
+            change_img = self.transforms(image=change_img)["image"]
+
             #####################add supplementary
         x_arr = np.transpose(x_arr, [2, 0, 1])
 

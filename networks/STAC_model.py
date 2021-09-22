@@ -31,7 +31,7 @@ class FloodModel(pl.LightningModule):
         self.min_epochs = self.hparams.get("min_epochs", 6)
         self.patience = self.hparams.get("patience", 4)
         self.num_workers = self.hparams.get("num_workers", 2)
-        self.batch_size = self.hparams.get("batch_size", 32)
+        self.batch_size = self.hparams.get("batch_size", 16)
         self.x_train = self.hparams.get("x_train")
         self.y_train = self.hparams.get("y_train")
         self.x_val = self.hparams.get("x_val")
@@ -68,11 +68,10 @@ class FloodModel(pl.LightningModule):
         torch.set_grad_enabled(True)
 
         # Load images and labels
-        x = batch["chip"]
-        nasadem = batch['nasadem']
-        x_arr = np.stack([x, nasadem], axis=1)
-        ## more data #####################################################
-        ##################################################################
+        x = [batch["chip"],batch["nasadem"],batch["extent"],batch["recurrence"],
+            batch["seasonality"],batch["transitions"],batch["change"]]
+        x = torch.cat(x,1)
+
         y = batch["label"].long()
         if self.gpu:
             x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
@@ -176,7 +175,7 @@ class FloodModel(pl.LightningModule):
         unet_model = smp.Unet(
             encoder_name=self.backbone,
             encoder_weights=self.weights,
-            in_channels=2,
+            in_channels=9,
             classes=2,
         )
         if self.gpu:
