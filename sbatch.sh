@@ -12,7 +12,7 @@
 #SBATCH --partition=gpu-t4
 #SBATCH --gpus=1
 
-#SBATCH --time=1-2:00:00
+#SBATCH --time=1-20:00:00
 # SBATCH --output=ArraySCI%A-%a.out
 #SBATCH --mail-user='xmdrm@udel.edu'
 #SBATCH --mail-type=END,FAIL,TIME_LIMIT_90

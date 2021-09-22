@@ -129,7 +129,7 @@ if __name__ == '__main__':
     for key,val in sample.items():
         if key in key_list:
             val = torch.squeeze(val)
-            print(f'key:{}, max value = {np.amax(val)}')
+            # print(f'key:{}, max value = {np.amax(val)}')
             if key is 'chip':
                 img = torch.moveaxis(val,0,-1)
                 img = utils.create_false_color_composite(img.numpy())
