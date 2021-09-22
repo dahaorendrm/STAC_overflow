@@ -30,8 +30,8 @@ class FloodModel(pl.LightningModule):
         self.max_epochs = self.hparams.get("max_epochs", 1000)
         self.min_epochs = self.hparams.get("min_epochs", 6)
         self.patience = self.hparams.get("patience", 4)
-        self.num_workers = self.hparams.get("num_workers", 2)
-        self.batch_size = self.hparams.get("batch_size", 16)
+        self.num_workers = self.hparams.get("num_workers", 8)
+        self.batch_size = self.hparams.get("batch_size", 24)
         self.x_train = self.hparams.get("x_train")
         self.y_train = self.hparams.get("y_train")
         self.x_val = self.hparams.get("x_val")
@@ -68,11 +68,11 @@ class FloodModel(pl.LightningModule):
         torch.set_grad_enabled(True)
 
         # Load images and labels
-        print(f'shape chip:{batch["chip"].shape} nasadem:{batch["nasadem"].shape} recurrence:{batch["recurrence"].shape}')
-        x = [batch["chip"],batch["nasadem"],batch["extent"],batch["recurrence"],
-            batch["seasonality"],batch["transitions"],batch["change"]]
-        x = torch.cat(x,1)
-        Error()
+        #print(f'shape chip:{batch["chip"].shape} nasadem:{batch["nasadem"].shape} recurrence:{batch["recurrence"].shape}')
+        x = [batch["chip"],batch["nasadem"],batch["extent"],batch["occurrence"],batch["recurrence"],batch["seasonality"],batch["transitions"],batch["change"]]
+        #Error()
+        x = torch.cat(x,1).float()
+        #Error()
         y = batch["label"].long()
         if self.gpu:
             x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
@@ -101,9 +101,9 @@ class FloodModel(pl.LightningModule):
         torch.set_grad_enabled(False)
 
         # Load images and labels
-        x = [batch["chip"],batch["nasadem"],batch["extent"],batch["recurrence"],
-            batch["seasonality"],batch["transitions"],batch["change"]]
-        x = torch.cat(x,1)
+        x = [batch["chip"],batch["nasadem"],batch["extent"],batch["occurrence"],batch["recurrence"],batch["seasonality"],batch["transitions"],batch["change"]]
+        #Error()
+        x = torch.cat(x,1).float()
         y = batch["label"].long()
         if self.gpu:
             x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
