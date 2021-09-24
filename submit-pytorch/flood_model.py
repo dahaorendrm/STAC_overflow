@@ -25,11 +25,11 @@ class FloodModel(pl.LightningModule):
         torch.set_grad_enabled(False)
 
         # Create a 2-channel image
-        with rasterio.open(img.vv_path) as vv:
+        with rasterio.open(vv_path) as vv:
             vv_img = vv.read(1)
-        with rasterio.open(img.vh_path) as vh:
+        with rasterio.open(vh_path) as vh:
             vh_img = vh.read(1)
-        name_path = img.vh_path[:-6]
+        name_path = vh_path[:-6]
         with rasterio.open(name_path+'nasadem.tif') as nasadem:
             nasadem_img = nasadem.read(1)
         with rasterio.open(name_path+'jrc-gsw-extent.tif') as extent:

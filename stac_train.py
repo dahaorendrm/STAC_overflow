@@ -37,7 +37,7 @@ hparams = {
     "backbone": "resnet34",
     "weights": "imagenet",
     "lr": 1e-3,
-    "min_epochs": 6,
+    "min_epochs": 8,
     "max_epochs": 1000,
     "patience": 4,
     "batch_size": 32,
