@@ -11,7 +11,7 @@ class FloodModel(pl.LightningModule):
         self.model = smp.Unet(
             encoder_name="resnet34",
             encoder_weights=None,
-            in_channels=2,
+            in_channels=9,
             classes=2,
         )
 
@@ -25,24 +25,66 @@ class FloodModel(pl.LightningModule):
         torch.set_grad_enabled(False)
 
         # Create a 2-channel image
-        with rasterio.open(vv_path) as vv:
+        with rasterio.open(img.vv_path) as vv:
             vv_img = vv.read(1)
-        with rasterio.open(vh_path) as vh:
+        with rasterio.open(img.vh_path) as vh:
             vh_img = vh.read(1)
+        name_path = img.vh_path[:-6]
+        with rasterio.open(name_path+'nasadem.tif') as nasadem:
+            nasadem_img = nasadem.read(1)
+        with rasterio.open(name_path+'jrc-gsw-extent.tif') as extent:
+            extent_img = extent.read(1)
+        with rasterio.open(name_path+'jrc-gsw-occurrence.tif') as occurrence:
+            occurrence_img = occurrence.read(1)
+        with rasterio.open(name_path+'jrc-gsw-recurrence.tif') as recurrence:
+            recurrence_img = recurrence.read(1)
+        with rasterio.open(name_path+'jrc-gsw-seasonality.tif') as seasonality:
+            seasonality_img = seasonality.read(1)
+        with rasterio.open(name_path+'jrc-gsw-transitions.tif') as transitions:
+            transitions_img = transitions.read(1)
+        with rasterio.open(name_path+'jrc-gsw-change.tif') as change:
+            change_img = change.read(1)
         x_arr = np.stack([vv_img, vh_img], axis=-1)
 
         # Min-max normalization
-        min_norm = -77
-        max_norm = 26
+        min_norm = -77 #-79
+        max_norm = 26 #28
         x_arr = np.clip(x_arr, min_norm, max_norm)
         x_arr = (x_arr - min_norm) / (max_norm - min_norm)
+        min_norm = -64
+        max_norm = 2096
+        nasadem_img = np.clip(nasadem_img, min_norm, max_norm)
+        nasadem_img = (nasadem_img - min_norm) / (max_norm - min_norm)
+        min_norm = 0
+        max_norm = 255
+        extent_img = np.clip(extent_img, min_norm, max_norm)
+        extent_img = (extent_img - min_norm) / (max_norm - min_norm)
+        occurrence_img = np.clip(occurrence_img, min_norm, max_norm)
+        occurrence_img = (occurrence_img - min_norm) / (max_norm - min_norm)
+        recurrence_img = np.clip(recurrence_img, min_norm, max_norm)
+        recurrence_img = (recurrence_img - min_norm) / (max_norm - min_norm)
+        seasonality_img = np.clip(seasonality_img, min_norm, max_norm)
+        seasonality_img = (seasonality_img - min_norm) / (max_norm - min_norm)
+        transitions_img = np.clip(transitions_img, min_norm, max_norm)
+        transitions_img = (transitions_img - min_norm) / (max_norm - min_norm)
+        change_img = np.clip(change_img, min_norm, max_norm)
+        change_img = (change_img - min_norm) / (max_norm - min_norm)
 
         # Transpose
         x_arr = np.transpose(x_arr, [2, 0, 1])
         x_arr = np.expand_dims(x_arr, axis=0)
-
+        nasadem_img = np.expand_dims(np.expand_dims(nasadem_img,0))
+        extent_img = np.expand_dims(np.expand_dims(extent_img,0))
+        occurrence_img = np.expand_dims(np.expand_dims(occurrence_img,0))
+        recurrence_img = np.expand_dims(np.expand_dims(recurrence_img,0))
+        seasonality_img = np.expand_dims(np.expand_dims(seasonality_img,0))
+        transitions_img = np.expand_dims(np.expand_dims(transitions_img,0))
+        change_img = np.expand_dims(np.expand_dims(change_img,0))
         # Perform inference
-        preds = self.forward(torch.from_numpy(x_arr))
+        x = (x_arr, nasadem_img, extent_img, occurrence_img, recurrence_img, seasonality_img, transitions_img, change_img)
+        #Error()
+        x = np.cat(x,1)
+        preds = self.forward(torch.from_numpy(x.float()))
         preds = torch.softmax(preds, dim=1)[:, 1]
         preds = (preds > 0.5) * 1
         return preds.detach().numpy().squeeze().squeeze()
