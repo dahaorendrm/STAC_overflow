@@ -31,7 +31,7 @@ class FloodModel(pl.LightningModule):
         self.min_epochs = self.hparams.get("min_epochs", 6)
         self.patience = self.hparams.get("patience", 4)
         self.num_workers = self.hparams.get("num_workers", 8)
-        self.batch_size = self.hparams.get("batch_size", 24)
+        self.batch_size = self.hparams.get("batch_size", 32)
         self.x_train = self.hparams.get("x_train")
         self.y_train = self.hparams.get("y_train")
         self.x_val = self.hparams.get("x_val")
