@@ -12,3 +12,4 @@ model-outputs
 tensorboard_logs
 temp
 submit-pytorch/codeexecution
+*.swp

@@ -38,6 +38,7 @@ class FloodModel(pl.LightningModule):
         self.y_val = self.hparams.get("y_val")
         self.output_path = self.hparams.get("output_path", "model-outputs")
         self.gpu = self.hparams.get("gpu", False)
+        self.in_channel = self.hparams.get("in_channel", 2)
         self.transform = training_transformations
 
         # Where final model will be saved
@@ -178,7 +179,7 @@ class FloodModel(pl.LightningModule):
         unet_model = smp.Unet(
             encoder_name=self.backbone,
             encoder_weights=self.weights,
-            in_channels=9,
+            in_channels=self.in_channels,
             classes=2,
         )
         if self.gpu:
