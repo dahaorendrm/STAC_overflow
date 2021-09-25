@@ -33,9 +33,10 @@ def make_prediction(chip_id, model):
     """
     logger.info("Starting inference.")
     try:
-        vv_path = INPUT_IMAGES_DIRECTORY / f"{chip_id}_vv.tif"
-        vh_path = INPUT_IMAGES_DIRECTORY / f"{chip_id}_vh.tif"
-        output_prediction = model.predict(vv_path, vh_path)
+        # vv_path = INPUT_IMAGES_DIRECTORY / f"{chip_id}_vv.tif"
+        # vh_path = INPUT_IMAGES_DIRECTORY / f"{chip_id}_vh.tif"
+        data_path = DATA_DIRECTORY
+        output_prediction = model.predict(data_path,chip_id)
     except Exception as e:
         logger.error(f"No bands found for {chip_id}. {e}")
         raise

@@ -19,30 +19,38 @@ class FloodModel(pl.LightningModule):
         # Forward pass
         return self.model(image)
 
-    def predict(self, vv_path, vh_path):
+    def predict(self, data_path, chip_id):
         # Switch on evaluation mode
         self.model.eval()
         torch.set_grad_enabled(False)
 
         # Create a 2-channel image
+        vv_path = data_path / "test_features" / f"{chip_id}_vv.tif"
+        vh_path = data_path / "test_features" / f"{chip_id}_vh.tif"
         with rasterio.open(vv_path) as vv:
             vv_img = vv.read(1)
         with rasterio.open(vh_path) as vh:
             vh_img = vh.read(1)
-        name_path = vh_path[:-6]
-        with rasterio.open(name_path+'nasadem.tif') as nasadem:
+        temp_path = data_path / "nasadem" / f"{chip_id}.tif"
+        with rasterio.open(temp_path) as nasadem:
             nasadem_img = nasadem.read(1)
-        with rasterio.open(name_path+'jrc-gsw-extent.tif') as extent:
+        temp_path = data_path / "jrc_extent" / f"{chip_id}.tif"
+        with rasterio.open(temp_path) as extent:
             extent_img = extent.read(1)
-        with rasterio.open(name_path+'jrc-gsw-occurrence.tif') as occurrence:
+        temp_path = data_path / "jrc_occurrence" / f"{chip_id}.tif"
+        with rasterio.open(temp_path) as occurrence:
             occurrence_img = occurrence.read(1)
-        with rasterio.open(name_path+'jrc-gsw-recurrence.tif') as recurrence:
+        temp_path = data_path / "jrc_recurrence" / f"{chip_id}.tif"
+        with rasterio.open(temp_path) as recurrence:
             recurrence_img = recurrence.read(1)
-        with rasterio.open(name_path+'jrc-gsw-seasonality.tif') as seasonality:
+        temp_path = data_path / "jrc_seasonality" / f"{chip_id}.tif"
+        with rasterio.open(temp_path) as seasonality:
             seasonality_img = seasonality.read(1)
-        with rasterio.open(name_path+'jrc-gsw-transitions.tif') as transitions:
+        temp_path = data_path / "jrc_transitions" / f"{chip_id}.tif"
+        with rasterio.open(temp_path) as transitions:
             transitions_img = transitions.read(1)
-        with rasterio.open(name_path+'jrc-gsw-change.tif') as change:
+        temp_path = data_path / "jrc_change" / f"{chip_id}.tif"
+        with rasterio.open(temp_path) as change:
             change_img = change.read(1)
         x_arr = np.stack([vv_img, vh_img], axis=-1)
 
@@ -73,18 +81,18 @@ class FloodModel(pl.LightningModule):
         # Transpose
         x_arr = np.transpose(x_arr, [2, 0, 1])
         x_arr = np.expand_dims(x_arr, axis=0)
-        nasadem_img = np.expand_dims(np.expand_dims(nasadem_img,0))
-        extent_img = np.expand_dims(np.expand_dims(extent_img,0))
-        occurrence_img = np.expand_dims(np.expand_dims(occurrence_img,0))
-        recurrence_img = np.expand_dims(np.expand_dims(recurrence_img,0))
-        seasonality_img = np.expand_dims(np.expand_dims(seasonality_img,0))
-        transitions_img = np.expand_dims(np.expand_dims(transitions_img,0))
-        change_img = np.expand_dims(np.expand_dims(change_img,0))
+        nasadem_img = np.expand_dims(np.expand_dims(nasadem_img,0),0)
+        extent_img = np.expand_dims(np.expand_dims(extent_img,0),0)
+        occurrence_img = np.expand_dims(np.expand_dims(occurrence_img,0),0)
+        recurrence_img = np.expand_dims(np.expand_dims(recurrence_img,0),0)
+        seasonality_img = np.expand_dims(np.expand_dims(seasonality_img,0),0)
+        transitions_img = np.expand_dims(np.expand_dims(transitions_img,0),0)
+        change_img = np.expand_dims(np.expand_dims(change_img,0),0)
         # Perform inference
         x = (x_arr, nasadem_img, extent_img, occurrence_img, recurrence_img, seasonality_img, transitions_img, change_img)
         #Error()
-        x = np.cat(x,1)
-        preds = self.forward(torch.from_numpy(x.float()))
+        x = np.concatenate(x,1)
+        preds = self.forward(torch.from_numpy(x).float())
         preds = torch.softmax(preds, dim=1)[:, 1]
         preds = (preds > 0.5) * 1
         return preds.detach().numpy().squeeze().squeeze()
