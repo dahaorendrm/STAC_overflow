@@ -12,13 +12,16 @@
 #SBATCH --partition=gpu-t4
 #SBATCH --gpus=1
 
-#SBATCH --time=1-20:00:00
+#SBATCH --time=0-20:00:00
 # SBATCH --output=ArraySCI%A-%a.out
 #SBATCH --mail-user='xmdrm@udel.edu'
 #SBATCH --mail-type=END,FAIL,TIME_LIMIT_90
 
 # export OMP_NUM_THREADS=4
 vpkg_require xm_pytorch/20210902-STAC
-python3 -u stac_train.py
-python3 -u submit.py
-cd submit-pytorch && zip -r submission_[$JOB_ID].zip *
+cd submit-pytorch
+cp -f *.py codeexecution
+cp -f -r assets codeexecution/assets
+#cd codeexecution
+python3 -u codeexecution/main.py
+cd ../
