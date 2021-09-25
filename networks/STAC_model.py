@@ -24,7 +24,7 @@ class FloodModel(pl.LightningModule):
         super(FloodModel, self).__init__()
         self.hparams.update(hparams)
         self.save_hyperparameters()
-        self.backbone = self.hparams.get("backbone", "resnet50")
+        self.backbone = self.hparams.get("backbone", "resnext50_32x4d")
         self.weights = self.hparams.get("weights", "imagenet")
         self.learning_rate = self.hparams.get("lr", 1e-3)
         self.max_epochs = self.hparams.get("max_epochs", 1000)
@@ -111,9 +111,12 @@ class FloodModel(pl.LightningModule):
 
         # Forward pass & softmax
         preds = self.forward(x)
+        from PIL import Image 
+        y.save("temp/vali_true.jpg")
+        preds.save("temp/vali_pred.jpg")
         preds = torch.softmax(preds, dim=1)[:, 1]
         preds = (preds > 0.5) * 1
-
+        
         # Calculate validation IOU (global)
         intersection, union = intersection_and_union(preds, y)
         self.intersection += intersection
@@ -181,6 +184,7 @@ class FloodModel(pl.LightningModule):
                      padding='same'),
         torch.nn.ReLU()
         )
+        torch.nn.init.normal_(cnn_denoise[0].weight.data, mean=0.0, std=1.0)
         unet_model = smp.Unet(
             encoder_name=self.backbone,
             encoder_weights=self.weights,
