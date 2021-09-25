@@ -24,7 +24,7 @@ class FloodModel(pl.LightningModule):
         super(FloodModel, self).__init__()
         self.hparams.update(hparams)
         self.save_hyperparameters()
-        self.backbone = self.hparams.get("backbone", "resnet34")
+        self.backbone = self.hparams.get("backbone", "resnet50")
         self.weights = self.hparams.get("weights", "imagenet")
         self.learning_rate = self.hparams.get("lr", 1e-3)
         self.max_epochs = self.hparams.get("max_epochs", 1000)
