@@ -47,7 +47,7 @@ hparams = {
     "output_path": "model-outputs",
     "log_path": "tensorboard_logs",
     "gpu": torch.cuda.is_available(),
-    "in_channel":9
+    "in_channels":9
 }
 
 flood_model = FloodModel(hparams=hparams)

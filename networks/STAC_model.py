@@ -38,7 +38,7 @@ class FloodModel(pl.LightningModule):
         self.y_val = self.hparams.get("y_val")
         self.output_path = self.hparams.get("output_path", "model-outputs")
         self.gpu = self.hparams.get("gpu", False)
-        self.in_channel = self.hparams.get("in_channel", 2)
+        self.in_channels = self.hparams.get("in_channels", 2)
         self.transform = training_transformations
 
         # Where final model will be saved
