@@ -176,15 +176,21 @@ class FloodModel(pl.LightningModule):
     ## Convenience Methods ##
 
     def _prepare_model(self):
+        cnn_denoise = torch.nn.Sequential(
+        torch.nn.Conv2d(self.in_channels, self.in_channels, kernel_size=5, stride=1,
+                     padding='same'),
+        torch.nn.ReLU()
+        )
         unet_model = smp.Unet(
             encoder_name=self.backbone,
             encoder_weights=self.weights,
             in_channels=self.in_channels,
             classes=2,
         )
+        s_stacked = torch.nn.Sequential(cnn_denoise, unet_model)
         if self.gpu:
-            unet_model.cuda()
-        return unet_model
+            s_stacked.cuda()
+        return s_stacked
 
     def _get_trainer_params(self):
         # Define callback behavior
