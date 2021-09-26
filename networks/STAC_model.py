@@ -111,9 +111,10 @@ class FloodModel(pl.LightningModule):
 
         # Forward pass & softmax
         preds = self.forward(x)
+        print(preds.shape)
         from PIL import Image 
-        y.save("temp/vali_true.jpg")
-        preds.save("temp/vali_pred.jpg")
+        Image.fromarray(np.squeeze(y.cpu().numpy())).save("temp/vali_true.jpg")
+        Image.fromarray(np.squeeze(preds.cpu().numpy())).save("temp/vali_pred.jpg")
         preds = torch.softmax(preds, dim=1)[:, 1]
         preds = (preds > 0.5) * 1
         
