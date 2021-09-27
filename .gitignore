@@ -11,5 +11,5 @@ model-outputs
 *.out
 tensorboard_logs
 temp
-submit-pytorch/codeexecution
 *.swp
+submit-pytorch/codeexecution

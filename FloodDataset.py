@@ -2,7 +2,29 @@ import torch
 import rasterio
 import numpy as np
 import os
-
+import albumentations
+# These transformations will be passed to our model class
+transformations = albumentations.Compose(
+    [
+        albumentations.RandomSizedCrop((256,384), 512, 512),
+        albumentations.RandomRotate90(),
+        albumentations.HorizontalFlip(),
+        albumentations.VerticalFlip(),
+    ],
+    additional_targets={
+        'image1': 'image',
+        'image2': 'image',
+        'image3': 'image',
+        'image4': 'image',
+        'image5': 'image',
+        'image6': 'image',
+        'image7': 'image',
+        'image8': 'image',
+        'image9': 'image',
+        'image10': 'image',
+        'mask': 'mask'
+    }
+)
 
 class FloodDataset(torch.utils.data.Dataset):
     """Reads in images, transforms pixel values, and serves a
@@ -10,10 +32,9 @@ class FloodDataset(torch.utils.data.Dataset):
     label masks (where available).
     """
 
-    def __init__(self, x_paths, y_paths=None, transforms=None):
+    def __init__(self, x_paths, y_paths=None):
         self.data = x_paths
         self.label = y_paths
-        self.transforms = transforms
 
     def __len__(self):
         return len(self.data)
@@ -65,19 +86,30 @@ class FloodDataset(torch.utils.data.Dataset):
         change_img = np.clip(change_img, min_norm, max_norm)
         change_img = (change_img - min_norm) / (max_norm - min_norm)
 
-        #######################adjust supp data range
-        # Apply data augmentations, if provided
-        if self.transforms:
-            x_arr = self.transforms(image=x_arr)["image"]
-            nasadem_img = self.transforms(image=nasadem_img)["image"]
-            extent_img = self.transforms(image=extent_img)["image"]
-            occurrence_img = self.transforms(image=occurrence_img)["image"]
-            recurrence_img = self.transforms(image=recurrence_img)["image"]
-            seasonality_img = self.transforms(image=seasonality_img)["image"]
-            transitions_img = self.transforms(image=transitions_img)["image"]
-            change_img = self.transforms(image=change_img)["image"]
-
-            #####################add supplementary
+        # Load label if available - training only
+        if self.label is not None:
+            label_path = self.label.loc[idx].label_path
+            with rasterio.open(label_path) as lp:
+                y_arr = lp.read(1)
+            # Apply same data augmentations to label            
+            
+            transformed = transformations(image=x_arr, mask=y_arr, 
+                          image1=nasadem_img, image2=extent_img, 
+                          image3=occurrence_img, image4=recurrence_img, 
+                          image5=seasonality_img, image6=transitions_img, image7=change_img)
+            x_arr = transformed["image"]
+            y_arr = transformed["mask"]
+            nasadem_img = transformed["image1"]
+            extent_img = transformed["image2"]
+            occurrence_img = transformed["image3"]
+            recurrence_img = transformed["image4"]
+            seasonality_img = transformed["image5"]
+            transitions_img = transformed["image6"]
+            change_img = transformed["image7"]
+            
+        else:
+             y_arr = None
+        # Prepare sample dictionary
         x_arr = np.transpose(x_arr, [2, 0, 1])
         nasadem_img = np.expand_dims(nasadem_img,0)
         extent_img = np.expand_dims(extent_img,0)
@@ -86,20 +118,8 @@ class FloodDataset(torch.utils.data.Dataset):
         seasonality_img = np.expand_dims(seasonality_img,0)
         transitions_img = np.expand_dims(transitions_img,0)
         change_img = np.expand_dims(change_img,0)
-        # Prepare sample dictionary
         sample = {"chip_id": img.chip_id, "chip": x_arr, "nasadem":nasadem_img, "extent":extent_img, "occurrence":occurrence_img,
-                        "recurrence":recurrence_img, "seasonality":seasonality_img, "transitions":transitions_img, "change":change_img}
-
-        # Load label if available - training only
-        if self.label is not None:
-            label_path = self.label.loc[idx].label_path
-            with rasterio.open(label_path) as lp:
-                y_arr = lp.read(1)
-            # Apply same data augmentations to label
-            if self.transforms:
-                y_arr = self.transforms(image=y_arr)["image"]
-            sample["label"] = y_arr
-
+                        "recurrence":recurrence_img, "seasonality":seasonality_img, "transitions":transitions_img, "change":change_img, "label":y_arr}
         return sample
 
 if __name__ == '__main__':
@@ -135,7 +155,11 @@ if __name__ == '__main__':
     for key,val in sample.items():
         if key in key_list:
             val = torch.squeeze(val)
+<<<<<<< HEAD
             # print(f'key:{}, max value = {np.amax(val)}')
+=======
+            #print(f'key:{}, max value = {np.amax(val)}')
+>>>>>>> master
             if key is 'chip':
                 img = torch.moveaxis(val,0,-1)
                 img = utils.create_false_color_composite(img.numpy())

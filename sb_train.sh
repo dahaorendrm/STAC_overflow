@@ -22,5 +22,5 @@ vpkg_require xm_pytorch/20210902-STAC
 python3 -u stac_train.py
 python3 -u submit.py
 cd submit-pytorch 
-zip -r submission_[$SLURM_JOB_ID].zip assets *.py
+#zip -r submission_[$SLURM_JOB_ID].zip assets *.py
 cd ..

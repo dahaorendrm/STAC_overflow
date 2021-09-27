@@ -8,16 +8,7 @@ import albumentations
 
 from FloodDataset import FloodDataset
 from loss import *
-
-# These transformations will be passed to our model class
-training_transformations = albumentations.Compose(
-    [
-        albumentations.RandomCrop(256, 256),
-        albumentations.RandomRotate90(),
-        albumentations.HorizontalFlip(),
-        albumentations.VerticalFlip(),
-    ]
-)
+import cv2
 
 class FloodModel(pl.LightningModule):
     def __init__(self, hparams):
@@ -39,7 +30,6 @@ class FloodModel(pl.LightningModule):
         self.output_path = self.hparams.get("output_path", "model-outputs")
         self.gpu = self.hparams.get("gpu", False)
         self.in_channels = self.hparams.get("in_channels", 2)
-        self.transform = training_transformations
 
         # Where final model will be saved
         self.output_path = Path.cwd() / self.output_path
@@ -51,9 +41,8 @@ class FloodModel(pl.LightningModule):
 
         # Instantiate datasets, model, and trainer params
         self.train_dataset = FloodDataset(
-            self.x_train, self.y_train, transforms=self.transform
-        )
-        self.val_dataset = FloodDataset(self.x_val, self.y_val, transforms=None)
+            self.x_train, self.y_train)
+        self.val_dataset = FloodDataset(self.x_val, self.y_val)
         self.model = self._prepare_model()
         self.trainer_params = self._get_trainer_params()
 
@@ -71,9 +60,7 @@ class FloodModel(pl.LightningModule):
         # Load images and labels
         #print(f'shape chip:{batch["chip"].shape} nasadem:{batch["nasadem"].shape} recurrence:{batch["recurrence"].shape}')
         x = [batch["chip"],batch["nasadem"],batch["extent"],batch["occurrence"],batch["recurrence"],batch["seasonality"],batch["transitions"],batch["change"]]
-        #Error()
         x = torch.cat(x,1).float()
-        #Error()
         y = batch["label"].long()
         if self.gpu:
             x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
@@ -89,9 +76,9 @@ class FloodModel(pl.LightningModule):
         self.log(
             "xe_dice_loss",
             xe_dice_loss,
-            on_step=True,
+            #on_step=True,
             on_epoch=True,
-            prog_bar=True,
+            #prog_bar=True,
             logger=True,
         )
         return xe_dice_loss
@@ -114,7 +101,7 @@ class FloodModel(pl.LightningModule):
         #print(f'preds shape {preds.shape}')
         preds = torch.softmax(preds, dim=1)[:, 1]
         from PIL import Image
-        for i in range(preds.shape[0]): 
+        for i in range(preds.shape[0]):
             temp = np.squeeze(y.cpu().numpy()[i,...])
             #print(f'label squeezed y shape is {temp.shape}')
             Image.fromarray((temp*255).astype(np.uint8)).save(f"temp/vali{i}_true.jpg")
@@ -129,7 +116,10 @@ class FloodModel(pl.LightningModule):
         # Log batch IOU
         batch_iou = intersection / union
         self.log(
-            "iou", batch_iou, on_step=True, on_epoch=True, prog_bar=True, logger=True
+            "iou", batch_iou, #on_step=True, 
+            on_epoch=True, 
+            #prog_bar=True, 
+            logger=True
         )
         return batch_iou
 
