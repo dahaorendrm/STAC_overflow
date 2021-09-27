@@ -111,11 +111,14 @@ class FloodModel(pl.LightningModule):
 
         # Forward pass & softmax
         preds = self.forward(x)
-        print(preds.shape)
-        from PIL import Image 
-        Image.fromarray(np.squeeze(y.cpu().numpy())).save("temp/vali_true.jpg")
-        Image.fromarray(np.squeeze(preds.cpu().numpy())).save("temp/vali_pred.jpg")
+        #print(f'preds shape {preds.shape}')
         preds = torch.softmax(preds, dim=1)[:, 1]
+        from PIL import Image
+        for i in range(preds.shape[0]): 
+            temp = np.squeeze(y.cpu().numpy()[i,...])
+            #print(f'label squeezed y shape is {temp.shape}')
+            Image.fromarray((temp*255).astype(np.uint8)).save(f"temp/vali{i}_true.jpg")
+            Image.fromarray((np.squeeze(preds.cpu().numpy()[i,...])*255).astype(np.uint8)).save(f"temp/vali{i}_pred.jpg")
         preds = (preds > 0.5) * 1
         
         # Calculate validation IOU (global)
