@@ -46,8 +46,8 @@ class FloodDataset(torch.utils.data.Dataset):
         max_norm = 26 #28
         x_arr = np.clip(x_arr, min_norm, max_norm)
         x_arr = (x_arr - min_norm) / (max_norm - min_norm)
-        min_norm = np.amin(nasadem_img)#-64
-        max_norm = np.amax(nasadem_img)#2096
+        min_norm = -64 #np.amin(nasadem_img)#-64
+        max_norm = 2096 #np.amax(nasadem_img)#2096
         nasadem_img = np.clip(nasadem_img, min_norm, max_norm)
         nasadem_img = (nasadem_img - min_norm) / (max_norm - min_norm)
         min_norm = 0
