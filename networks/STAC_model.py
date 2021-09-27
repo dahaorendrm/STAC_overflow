@@ -8,16 +8,7 @@ import albumentations
 
 from FloodDataset import FloodDataset
 from loss import *
-
-# These transformations will be passed to our model class
-training_transformations = albumentations.Compose(
-    [
-        albumentations.RandomCrop(256, 256),
-        albumentations.RandomRotate90(),
-        albumentations.HorizontalFlip(),
-        albumentations.VerticalFlip(),
-    ]
-)
+import cv2
 
 class FloodModel(pl.LightningModule):
     def __init__(self, hparams):
@@ -38,7 +29,6 @@ class FloodModel(pl.LightningModule):
         self.y_val = self.hparams.get("y_val")
         self.output_path = self.hparams.get("output_path", "model-outputs")
         self.gpu = self.hparams.get("gpu", False)
-        self.transform = training_transformations
 
         # Where final model will be saved
         self.output_path = Path.cwd() / self.output_path
@@ -50,9 +40,8 @@ class FloodModel(pl.LightningModule):
 
         # Instantiate datasets, model, and trainer params
         self.train_dataset = FloodDataset(
-            self.x_train, self.y_train, transforms=self.transform
-        )
-        self.val_dataset = FloodDataset(self.x_val, self.y_val, transforms=None)
+            self.x_train, self.y_train)
+        self.val_dataset = FloodDataset(self.x_val, self.y_val)
         self.model = self._prepare_model()
         self.trainer_params = self._get_trainer_params()
 
@@ -70,7 +59,7 @@ class FloodModel(pl.LightningModule):
         # Load images and labels
         x = batch["chip"]
         nasadem = batch['nasadem']
-        x_arr = np.stack([x, nasadem], axis=1)
+        #x_arr = np.stack([x, nasadem], axis=1)
         ## more data #####################################################
         ##################################################################
         y = batch["label"].long()
@@ -88,9 +77,9 @@ class FloodModel(pl.LightningModule):
         self.log(
             "xe_dice_loss",
             xe_dice_loss,
-            on_step=True,
+            #on_step=True,
             on_epoch=True,
-            prog_bar=True,
+            #prog_bar=True,
             logger=True,
         )
         return xe_dice_loss
@@ -125,7 +114,10 @@ class FloodModel(pl.LightningModule):
         # Log batch IOU
         batch_iou = intersection / union
         self.log(
-            "iou", batch_iou, on_step=True, on_epoch=True, prog_bar=True, logger=True
+            "iou", batch_iou, #on_step=True, 
+            on_epoch=True, 
+            #prog_bar=True, 
+            logger=True
         )
         return batch_iou
 
