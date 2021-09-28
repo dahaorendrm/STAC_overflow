@@ -19,8 +19,10 @@
 
 # export OMP_NUM_THREADS=4
 vpkg_require xm_pytorch/20210902-STAC
+python3 submit.py
 cd submit-pytorch
 cp -f *.py codeexecution
+rm -r -f codexecution/assets
 cp -f -r assets codeexecution/assets
 #cd codeexecution
 python3 -u codeexecution/main.py
