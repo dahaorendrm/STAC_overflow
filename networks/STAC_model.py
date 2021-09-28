@@ -30,7 +30,8 @@ class FloodModel(pl.LightningModule):
         self.output_path = self.hparams.get("output_path", "model-outputs")
         self.gpu = self.hparams.get("gpu", False)
         self.in_channels = self.hparams.get("in_channels", 2)
-
+        self.init =  self.hparams.get("init",False)
+        self.ratio = self.hparams.get("ratio",0.5) # set loss function dice ratio 
         # Where final model will be saved
         self.output_path = Path.cwd() / self.output_path
         self.output_path.mkdir(exist_ok=True)
@@ -44,6 +45,11 @@ class FloodModel(pl.LightningModule):
             self.x_train, self.y_train)
         self.val_dataset = FloodDataset(self.x_val, self.y_val)
         self.model = self._prepare_model()
+
+        # Init model with previous train
+        if self.init:
+            self.model.load_state_dict(torch.load("model-outputs/flood_model_weight.pt"))
+
         self.trainer_params = self._get_trainer_params()
 
     ## Required LightningModule methods ##
@@ -69,7 +75,7 @@ class FloodModel(pl.LightningModule):
         preds = self.forward(x)
 
         # Calculate training loss
-        criterion = XEDiceLoss()
+        criterion = XEDiceLoss(self.ratio)
         xe_dice_loss = criterion(preds, y)
 
         # Log batch xe_dice_loss
@@ -145,18 +151,19 @@ class FloodModel(pl.LightningModule):
 
     def configure_optimizers(self):
         # Define optimizer
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
-
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        if self.init:
+            self.optimizer.load_state_dict(torch.load("model-outputs/flood_model_optimizer.pt"))    
         # Define scheduler
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode="max", factor=0.5, patience=self.patience
+            self.optimizer, mode="max", factor=0.5, patience=self.patience
         )
         scheduler = {
             "scheduler": scheduler,
             "interval": "epoch",
             "monitor": "val_loss",
         }  # logged value to monitor
-        return [optimizer], [scheduler]
+        return [self.optimizer], [scheduler]
 
     def validation_epoch_end(self, outputs):
         # Calculate IOU at end of epoch
@@ -183,6 +190,8 @@ class FloodModel(pl.LightningModule):
             encoder_name=self.backbone,
             encoder_weights=self.weights,
             in_channels=self.in_channels,
+           # encoder_depth=5,
+            
             classes=2,
         )
         s_stacked = torch.nn.Sequential(cnn_denoise, unet_model)

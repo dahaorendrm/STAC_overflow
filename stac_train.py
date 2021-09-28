@@ -47,7 +47,9 @@ hparams = {
     "output_path": "model-outputs",
     "log_path": "tensorboard_logs",
     "gpu": torch.cuda.is_available(),
-    "in_channels":9
+    "in_channels":9,
+    "init":False,
+    "ratio":0.35 # loss function dice ratio
 }
 
 flood_model = FloodModel(hparams=hparams)
@@ -57,5 +59,8 @@ flood_model.fit()
 # results
 print(f'Best IOU score is : {flood_model.trainer_params["callbacks"][0].best_model_score}')
 # save the weights to submitssion file
-weight_path = "model-outputs/flood_model.pt"
-torch.save(flood_model.state_dict(), weight_path)
+weight_path = "model-outputs/flood_model_weight.pt"
+optimizer_path = "model-outputs/flood_model_optimizer.pt"
+torch.save(flood_model.model.state_dict(), weight_path)
+torch.save(flood_model.optimizer.state_dict(), optimizer_path)
+
