@@ -78,7 +78,7 @@ class FloodModel(pl.LightningModule):
             xe_dice_loss,
             #on_step=True,
             on_epoch=True,
-            #prog_bar=True,
+            prog_bar=False,
             logger=True,
         )
         return xe_dice_loss
@@ -118,7 +118,7 @@ class FloodModel(pl.LightningModule):
         self.log(
             "iou", batch_iou, #on_step=True, 
             on_epoch=True, 
-            #prog_bar=True, 
+            prog_bar=False, 
             logger=True
         )
         return batch_iou

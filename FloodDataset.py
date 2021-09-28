@@ -6,7 +6,7 @@ import albumentations
 # These transformations will be passed to our model class
 transformations = albumentations.Compose(
     [
-        albumentations.RandomSizedCrop((256,384), 512, 512),
+        albumentations.RandomSizedCrop((256,512), 512, 512),
         albumentations.RandomRotate90(),
         albumentations.HorizontalFlip(),
         albumentations.VerticalFlip(),
@@ -155,11 +155,6 @@ if __name__ == '__main__':
     for key,val in sample.items():
         if key in key_list:
             val = torch.squeeze(val)
-<<<<<<< HEAD
-            # print(f'key:{}, max value = {np.amax(val)}')
-=======
-            #print(f'key:{}, max value = {np.amax(val)}')
->>>>>>> master
             if key is 'chip':
                 img = torch.moveaxis(val,0,-1)
                 img = utils.create_false_color_composite(img.numpy())
