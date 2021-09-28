@@ -11,9 +11,9 @@ class FloodModel(pl.LightningModule):
         cnn_denoise = torch.nn.Sequential(
             torch.nn.Conv2d(9, 9, kernel_size=5, stride=1, padding='same'),
             torch.nn.ReLU())
-        torch.nn.init.normal_(cnn_denoise[0].weight.data, mean=0.0, std=1.0)
+        #torch.nn.init.normal_(cnn_denoise[0].weight.data, mean=0.0, std=1.0)
         unet_model = smp.Unet(
-            encoder_name="resnet34",
+            encoder_name="imagenet+background",
             encoder_weights=None,
             in_channels=9,
             classes=2,

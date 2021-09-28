@@ -34,9 +34,9 @@ hparams = {
     "y_train": train_y,
     "y_val": val_y,
     # Optional hparams
-    "backbone": "resnet34",
-    "weights": "imagenet",
-    "lr": 4e-4,
+    "backbone": "inceptionv4",
+    "weights": "imagenet+background",
+    "lr": 8e-4,
     "min_epochs": 6,
     "max_epochs": 1000,
     "patience": 10,
