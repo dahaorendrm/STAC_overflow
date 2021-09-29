@@ -3,22 +3,27 @@ import pytorch_lightning as pl
 import rasterio
 import segmentation_models_pytorch as smp
 import torch
-
+from . import ModelComplex as MC
 
 class FloodModel(pl.LightningModule):
     def __init__(self):
         super().__init__()
-        cnn_denoise = torch.nn.Sequential(
-            torch.nn.Conv2d(9, 9, kernel_size=5, stride=1, padding=2),
-            torch.nn.ReLU())
-        #torch.nn.init.normal_(cnn_denoise[0].weight.data, mean=0.0, std=1.0)
-        unet_model = smp.Unet(
-            encoder_name="nceptionv4",
-            encoder_weights=None,
-            in_channels=9,
-            classes=2,
-        )
-        self.model = torch.nn.Sequential(cnn_denoise, unet_model)
+        radar_cnn = torch.nn.Sequential(MC.MultiScaleConv2d(2,2,(1,3,7)),
+                torch.nn.ReLU())
+        radar_cnn.apply(self._init_weights_normal)
+        nasadem_cnn = torch.nn.Sequential(MC.MultiScaleConv2d(1,1,(1,3,7)),
+                torch.nn.ReLU())
+        nasadem_cnn.apply(self._init_weights_normal)
+        jrc_cnn = torch.nn.Sequential(torch.nn.Conv2d(6,2,1,padding=0),
+                torch.nn.ReLU())
+        jrc_cnn.apply(self._init_weights_xavier)
+        unet = smp.Unet(
+                encoder_name=self.backbone,
+                encoder_weights=self.weights,
+                in_channels=11,
+                classes=2
+                )
+        self.model = MC.ModelComplex(radar_cnn,nasadem_cnn,jrc_cnn,unet)
 
     def forward(self, image):
         # Forward pass
@@ -99,5 +104,5 @@ class FloodModel(pl.LightningModule):
         x = np.concatenate(x,1)
         preds = self.forward(torch.from_numpy(x).float())
         preds = torch.softmax(preds, dim=1)[:, 1]
-        preds = (preds > 0) * 1
+        preds = (preds > 0.1) * 1
         return preds.detach().numpy().squeeze().squeeze()
