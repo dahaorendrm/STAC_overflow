@@ -183,12 +183,10 @@ class FloodModel(pl.LightningModule):
     def _prepare_model(self):
         radar_cnn = torch.nn.Sequential(MC.MultiScaleConv2d(2,2,(3,5,7)),
                 torch.nn.ReLU())
-        for m in radar_cnn.modules():
-            torch.nn.init.normal_(m.weight.data, mean=0.0, std=1.0)
+        radar_cnn.apply(_init_weights_normal)
         nasadem_cnn = torch.nn.Sequential(MC.MultiScaleConv2d(1,1,(3,5,7)),
                 torch.nn.ReLU())
-        for m in nasadem_cnn.modules():
-            torch.nn.init.normal_(m.weight.data, mean=0.0, std=1.0)
+        nasadem_cnn.apply(_init_weights_xavier)
         jrc_cnn = torch.nn.Sequential(torch.nnConv2d(6,2,1,padding=0),
                 torch.nn.ReLU())
         for m in jrc_cnn.modules():
@@ -205,6 +203,14 @@ class FloodModel(pl.LightningModule):
         if self.gpu:
             complexmodel.cuda()
         return complexmodel
+
+    def _init_weights_normal(self, m):
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+            nn.init.xavier_normal_(m.weight)
+
+    def _init_weights_xavier(self, m):
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+            nn.init.xavier_uniform_(m.weight)
 
     def _get_trainer_params(self):
         # Define callback behavior
