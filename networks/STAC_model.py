@@ -9,6 +9,7 @@ import albumentations
 from FloodDataset import FloodDataset
 from loss import *
 import cv2
+from . import ModelComplex as MC
 
 class FloodModel(pl.LightningModule):
     def __init__(self, hparams):
@@ -31,7 +32,7 @@ class FloodModel(pl.LightningModule):
         self.gpu = self.hparams.get("gpu", False)
         self.in_channels = self.hparams.get("in_channels", 2)
         self.init =  self.hparams.get("init",False)
-        self.ratio = self.hparams.get("ratio",0.5) # set loss function dice ratio 
+        self.ratio = self.hparams.get("ratio",0.5) # set loss function dice ratio
         # Where final model will be saved
         self.output_path = Path.cwd() / self.output_path
         self.output_path.mkdir(exist_ok=True)
@@ -94,7 +95,7 @@ class FloodModel(pl.LightningModule):
         self.model.eval()
         torch.set_grad_enabled(False)
 
-        # Load images and labels
+        # Load images and labels. data order:chip, nasadem, jrc
         x = [batch["chip"],batch["nasadem"],batch["extent"],batch["occurrence"],batch["recurrence"],batch["seasonality"],batch["transitions"],batch["change"]]
         #Error()
         x = torch.cat(x,1).float()
@@ -113,7 +114,7 @@ class FloodModel(pl.LightningModule):
             Image.fromarray((temp*255).astype(np.uint8)).save(f"temp/vali{i}_true.jpg")
             Image.fromarray((np.squeeze(preds.cpu().numpy()[i,...])*255).astype(np.uint8)).save(f"temp/vali{i}_pred.jpg")
         preds = (preds > 0) * 1
-        
+
         # Calculate validation IOU (global)
         intersection, union = intersection_and_union(preds, y)
         self.intersection += intersection
@@ -122,9 +123,9 @@ class FloodModel(pl.LightningModule):
         # Log batch IOU
         batch_iou = intersection / union
         self.log(
-            "iou", batch_iou, #on_step=True, 
-            on_epoch=True, 
-            prog_bar=False, 
+            "iou", batch_iou, #on_step=True,
+            on_epoch=True,
+            prog_bar=False,
             logger=True
         )
         return batch_iou
@@ -153,7 +154,7 @@ class FloodModel(pl.LightningModule):
         # Define optimizer
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
         if self.init:
-            self.optimizer.load_state_dict(torch.load("model-outputs/flood_model_optimizer.pt"))    
+            self.optimizer.load_state_dict(torch.load("model-outputs/flood_model_optimizer.pt"))
         # Define scheduler
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             self.optimizer, mode="max", factor=0.5, patience=self.patience
@@ -180,22 +181,30 @@ class FloodModel(pl.LightningModule):
     ## Convenience Methods ##
 
     def _prepare_model(self):
-        cnn_denoise = torch.nn.Sequential(
-        torch.nn.Conv2d(self.in_channels, self.in_channels, kernel_size=5, stride=1,
-                     padding='same'),
-        torch.nn.ReLU()
-        )
-        torch.nn.init.normal_(cnn_denoise[0].weight.data, mean=0.0, std=1.0)
-        unet_model = smp.Unet(
-            encoder_name=self.backbone,
-            encoder_weights=self.weights,
-            in_channels=self.in_channels,           
-            classes=2,
-        )
-        s_stacked = torch.nn.Sequential(cnn_denoise, unet_model)
+        radar_cnn = torch.nn.Sequential(MC.MultiScaleConv2d(2,2,(3,5,7)),
+                torch.nn.ReLU())
+        for m in radar_cnn.modules():
+            torch.nn.init.normal_(m.weight.data, mean=0.0, std=1.0)
+        nasadem_cnn = torch.nn.Sequential(MC.MultiScaleConv2d(1,1,(3,5,7)),
+                torch.nn.ReLU())
+        for m in nasadem_cnn.modules():
+            torch.nn.init.normal_(m.weight.data, mean=0.0, std=1.0)
+        jrc_cnn = torch.nn.Sequential(torch.nnConv2d(6,2,1,padding=0),
+                torch.nn.ReLU())
+        for m in jrc_cnn.modules():
+            torch.nn.init.xavier_uniform_(m.weight.data)
+        unet = smp.Unet(
+                encoder_name=self.backbone,
+                encoder_weights=self.weights,
+                in_channels=11,
+                classes=2
+                )
+
+        complexmodel = MC.ModelComplex(radar_cnn,nasadem_cnn,jrc_cnn,unet)
+
         if self.gpu:
-            s_stacked.cuda()
-        return s_stacked
+            complexmodel.cuda()
+        return complexmodel
 
     def _get_trainer_params(self):
         # Define callback behavior

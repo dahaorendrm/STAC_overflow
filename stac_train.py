@@ -47,7 +47,7 @@ hparams = {
     "output_path": "model-outputs",
     "log_path": "tensorboard_logs",
     "gpu": torch.cuda.is_available(),
-    "in_channels":9,
+    #"in_channels":9,
     "init":False,
     "ratio":0.5 # loss function dice ratio
 }
@@ -63,4 +63,3 @@ weight_path = "model-outputs/flood_model_weight.pt"
 optimizer_path = "model-outputs/flood_model_optimizer.pt"
 torch.save(flood_model.model.state_dict(), weight_path)
 torch.save(flood_model.optimizer.state_dict(), optimizer_path)
-
