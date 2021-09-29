@@ -9,8 +9,8 @@
 # SBATCH --mem-per-cpu=10G
 
 #SBATCH --job-name=STAC_train
-#SBATCH --partition=gpu-t4
-#SBATCH --gpus=1
+#SBATCH --partition=idle
+# SBATCH --gpus=1
 
 #SBATCH --time=0-20:00:00
 # SBATCH --output=ArraySCI%A-%a.out
@@ -21,8 +21,10 @@
 vpkg_require xm_pytorch/20210902-STAC
 python3 submit.py
 cd submit-pytorch
+rm -r -f codeexecution
+mkdir codeexecution
 cp -f *.py codeexecution
-rm -r -f codexecution/assets
+#rm -r -f codexecution/assets
 cp -f -r assets codeexecution/assets
 #cd codeexecution
 python3 -u codeexecution/main.py
