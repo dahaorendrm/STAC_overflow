@@ -9,11 +9,11 @@ class FloodModel(pl.LightningModule):
     def __init__(self):
         super().__init__()
         cnn_denoise = torch.nn.Sequential(
-            torch.nn.Conv2d(9, 9, kernel_size=5, stride=1, padding='same'),
+            torch.nn.Conv2d(9, 9, kernel_size=5, stride=1, padding=2),
             torch.nn.ReLU())
         #torch.nn.init.normal_(cnn_denoise[0].weight.data, mean=0.0, std=1.0)
         unet_model = smp.Unet(
-            encoder_name="imagenet+background",
+            encoder_name="nceptionv4",
             encoder_weights=None,
             in_channels=9,
             classes=2,
@@ -99,5 +99,5 @@ class FloodModel(pl.LightningModule):
         x = np.concatenate(x,1)
         preds = self.forward(torch.from_numpy(x).float())
         preds = torch.softmax(preds, dim=1)[:, 1]
-        preds = (preds > 0.5) * 1
+        preds = (preds > 0) * 1
         return preds.detach().numpy().squeeze().squeeze()

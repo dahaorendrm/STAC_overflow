@@ -36,12 +36,12 @@ hparams = {
     # Optional hparams
     "backbone": "inceptionv4",
     "weights": "imagenet+background",
-    "lr": 8e-4,
+    "lr": 9e-4,
     "min_epochs": 6,
     "max_epochs": 1000,
-    "patience": 10,
-    "batch_size": 32,
-    "num_workers": 32,
+    "patience": 4,
+    "batch_size": 24,
+    "num_workers": 24,
     "val_sanity_checks": 0,
     "fast_dev_run": False,
     "output_path": "model-outputs",
@@ -49,7 +49,7 @@ hparams = {
     "gpu": torch.cuda.is_available(),
     "in_channels":9,
     "init":False,
-    "ratio":0.35 # loss function dice ratio
+    "ratio":0.5 # loss function dice ratio
 }
 
 flood_model = FloodModel(hparams=hparams)

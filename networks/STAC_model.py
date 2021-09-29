@@ -112,7 +112,7 @@ class FloodModel(pl.LightningModule):
             #print(f'label squeezed y shape is {temp.shape}')
             Image.fromarray((temp*255).astype(np.uint8)).save(f"temp/vali{i}_true.jpg")
             Image.fromarray((np.squeeze(preds.cpu().numpy()[i,...])*255).astype(np.uint8)).save(f"temp/vali{i}_pred.jpg")
-        preds = (preds > 0.5) * 1
+        preds = (preds > 0) * 1
         
         # Calculate validation IOU (global)
         intersection, union = intersection_and_union(preds, y)
@@ -189,9 +189,7 @@ class FloodModel(pl.LightningModule):
         unet_model = smp.Unet(
             encoder_name=self.backbone,
             encoder_weights=self.weights,
-            in_channels=self.in_channels,
-           # encoder_depth=5,
-            
+            in_channels=self.in_channels,           
             classes=2,
         )
         s_stacked = torch.nn.Sequential(cnn_denoise, unet_model)

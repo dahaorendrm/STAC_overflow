@@ -62,7 +62,7 @@ def main():
     # Explicitly set where we expect smp to load the saved resnet from just to be sure
     torch.hub.set_dir(ASSETS_DIRECTORY / "torch/hub")
     model = FloodModel()
-    model.load_state_dict(torch.load(ASSETS_DIRECTORY / "flood_model.pt"))
+    model.load_state_dict(torch.load(ASSETS_DIRECTORY / "flood_model_weight.pt"))
 
     logger.info("Finding chip IDs")
     chip_ids = get_expected_chip_ids()
