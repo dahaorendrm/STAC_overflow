@@ -113,7 +113,7 @@ class FloodModel(pl.LightningModule):
             #print(f'label squeezed y shape is {temp.shape}')
             Image.fromarray((temp*255).astype(np.uint8)).save(f"temp/vali{i}_true.jpg")
             Image.fromarray((np.squeeze(preds.cpu().numpy()[i,...])*255).astype(np.uint8)).save(f"temp/vali{i}_pred.jpg")
-        preds = (preds > 0) * 1
+        preds = (preds > 0.5) * 1
 
         # Calculate validation IOU (global)
         intersection, union = intersection_and_union(preds, y)
@@ -181,16 +181,15 @@ class FloodModel(pl.LightningModule):
     ## Convenience Methods ##
 
     def _prepare_model(self):
-        radar_cnn = torch.nn.Sequential(MC.MultiScaleConv2d(2,2,(3,5,7)),
+        radar_cnn = torch.nn.Sequential(MC.MultiScaleConv2d(2,2,(1,3,7)),
                 torch.nn.ReLU())
-        radar_cnn.apply(_init_weights_normal)
-        nasadem_cnn = torch.nn.Sequential(MC.MultiScaleConv2d(1,1,(3,5,7)),
+        radar_cnn.apply(self._init_weights_normal)
+        nasadem_cnn = torch.nn.Sequential(MC.MultiScaleConv2d(1,1,(1,3,7)),
                 torch.nn.ReLU())
-        nasadem_cnn.apply(_init_weights_xavier)
-        jrc_cnn = torch.nn.Sequential(torch.nnConv2d(6,2,1,padding=0),
+        nasadem_cnn.apply(self._init_weights_normal)
+        jrc_cnn = torch.nn.Sequential(torch.nn.Conv2d(6,2,1,padding=0),
                 torch.nn.ReLU())
-        for m in jrc_cnn.modules():
-            torch.nn.init.xavier_uniform_(m.weight.data)
+        jrc_cnn.apply(self._init_weights_xavier)
         unet = smp.Unet(
                 encoder_name=self.backbone,
                 encoder_weights=self.weights,
@@ -205,12 +204,12 @@ class FloodModel(pl.LightningModule):
         return complexmodel
 
     def _init_weights_normal(self, m):
-        if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-            nn.init.xavier_normal_(m.weight)
+        if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Linear):
+            torch.nn.init.normal_(m.weight)
 
     def _init_weights_xavier(self, m):
-        if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-            nn.init.xavier_uniform_(m.weight)
+        if isinstance(m,  torch.nn.Conv2d) or isinstance(m,  torch.nn.Linear):
+             torch.nn.init.xavier_uniform_(m.weight)
 
     def _get_trainer_params(self):
         # Define callback behavior
