@@ -6,7 +6,7 @@ import random
 random.seed(9) # set a seed for reproducibility
 import utils
 import torch
-
+import os
 from networks.STAC_model import FloodModel
 import loss
 # process data
@@ -36,18 +36,20 @@ hparams = {
     # Optional hparams
     "backbone": "resnet34",
     "weights": "imagenet",
-    "lr": 4e-4,
+    "lr": 6e-4,
     "min_epochs": 6,
     "max_epochs": 1000,
     "patience": 10,
-    "batch_size": 32,
-    "num_workers": 32,
+    "batch_size": 24,
+    "num_workers": 1,
     "val_sanity_checks": 0,
     "fast_dev_run": False,
     "output_path": "model-outputs",
     "log_path": "tensorboard_logs",
     "gpu": torch.cuda.is_available(),
-    "in_channels":9
+    "in_channels":9,
+    "loss_ratio":0.6,
+    "init":True # load previous weights
 }
 
 flood_model = FloodModel(hparams=hparams)
@@ -57,5 +59,7 @@ flood_model.fit()
 # results
 print(f'Best IOU score is : {flood_model.trainer_params["callbacks"][0].best_model_score}')
 # save the weights to submitssion file
-weight_path = "model-outputs/flood_model.pt"
-torch.save(flood_model.state_dict(), weight_path)
+weight_path = "model-outputs/flood_model_weight.pt"
+optimizer_path = "model-outputs/flood_model_optimizer.pt"
+torch.save(flood_model.model.state_dict(), weight_path)
+torch.save(flood_model.optimizer.state_dict(),optimizer_path)
