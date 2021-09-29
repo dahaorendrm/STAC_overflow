@@ -22,7 +22,8 @@ class ModelComplex(nn.Module):
 
 
 class MultiScaleConv2d(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, kernel_sizes: Iterable[int] = (3, 5, 7)):
+    def __init__(self, in_channels: int, out_channels: int, kernel_sizes:list  = (3, 5, 7)):
+        super(MultiScaleConv2d, self).__init__()
         # iterate the list and create a ModuleList of single Conv1d blocks
         self.models = nn.ModuleList()
         for k in kernel_sizes:

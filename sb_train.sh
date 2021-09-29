@@ -3,12 +3,12 @@
 #BATCH --nodes=1
 #SBATCH --ntasks=1
 
-#SBATCH --cpus-per-task=24
+#SBATCH --cpus-per-task=2
 
 #SBATCH --mem=40G
 # SBATCH --mem-per-cpu=10G
 
-#SBATCH --job-name=STAC_train
+#SBATCH --job-name=STAC_new_archi
 #SBATCH --partition=gpu-v100
 #SBATCH --gpus=1
 
